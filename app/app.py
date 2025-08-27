@@ -1,29 +1,27 @@
-import streamlit as st
-import numpy as np
+import pandas as pd
 import pickle
-import os
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
 
-# Load model and scaler
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "student_model.pkl")
-with open(MODEL_PATH, "rb") as f:
-    model, scaler = pickle.load(f)
+# 1. Load dataset
+df = pd.read_csv("data/student-mat.csv")  # adjust path if needed
 
-st.title("🎓 Student Performance Prediction App")
-st.write("Enter the student details below to predict the final grade (G3).")
+# 2. Use the same 5 features your app collects
+X = df[['studytime', 'failures', 'absences', 'G1', 'G2']]
+y = df['G3']
 
-# Inputs
-studytime = st.number_input("Study Time (1–4)", min_value=1, max_value=4, value=2)
-failures = st.number_input("Number of Past Failures", min_value=0, max_value=4, value=0)
-absences = st.number_input("Absences", min_value=0, max_value=100, value=5)
-g1 = st.number_input("First Period Grade (0–20)", min_value=0, max_value=20, value=10)
+# 3. Scale features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
 
-# Removed G2 to match scaler (only 4 features expected)
+# 4. Train model
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+model = LinearRegression()
+model.fit(X_train, y_train)
 
-if st.button("Predict Final Grade"):
-    # Prepare features
-    features = np.array([[studytime, failures, absences, g1]])
-    features_scaled = scaler.transform(features)
+# 5. Save model, scaler, and features list
+with open("models/student_model.pkl", "wb") as f:
+    pickle.dump((model, scaler, ['studytime', 'failures', 'absences', 'G1', 'G2']), f)
 
-    # Predict
-    prediction = model.predict(features_scaled)[0]
-    st.success(f"Predicted Final Grade (G3): {round(prediction, 2)}")
+print("✅ Model trained and saved with 5 features at models/student_model.pkl")
