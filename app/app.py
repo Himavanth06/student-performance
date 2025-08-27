@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 
 # 1. Load dataset
-df = pd.read_csv("data/student-mat.csv")  # adjust path if needed
+df = pd.read_csv(df = pd.read_csv("data/student_performance.csv"))  # adjust path if needed
 
 # 2. Use the same 5 features your app collects
 X = df[['studytime', 'failures', 'absences', 'G1', 'G2']]
