@@ -1,24 +1,38 @@
-import streamlit as st
+import os
 import pickle
+import streamlit as st
 import numpy as np
 
-# Load model + scaler
-model, scaler = pickle.load(open("../models/student_model.pkl", "rb"))
+# -------------------------------
+# Load trained model and scaler
+# -------------------------------
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "student_model.pkl")
 
-st.title("📘 Student Performance Prediction")
-st.write("Enter details to predict if a student will Pass or Fail.")
+with open(MODEL_PATH, "rb") as f:
+    model, scaler = pickle.load(f)
 
-# User Inputs
-hours = st.number_input("Hours Studied", min_value=0, max_value=16, value=5)
-attendance = st.number_input("Attendance (%)", min_value=0, max_value=100, value=80)
-prev_score = st.number_input("Previous Score (%)", min_value=0, max_value=100, value=70)
-assignments = st.number_input("Assignments Submitted", min_value=0, max_value=10, value=7)
+# -------------------------------
+# Streamlit UI
+# -------------------------------
+st.set_page_config(page_title="Student Performance Predictor", page_icon="📊")
 
-if st.button("Predict Result"):
-    input_data = scaler.transform([[hours, attendance, prev_score, assignments]])
-    prediction = model.predict(input_data)[0]
-    
-    if prediction == 1:
-        st.success("✅ Student is likely to PASS")
-    else:
-        st.error("❌ Student is likely to FAIL")
+st.title("📊 Student Performance Prediction App")
+st.write("Enter student details below to predict exam performance:")
+
+# Example input fields (you can expand these depending on your dataset)
+study_time = st.slider("Weekly Study Time (hours)", 1, 20, 5)
+failures = st.slider("Number of Past Class Failures", 0, 5, 0)
+absences = st.slider("Number of School Absences", 0, 50, 2)
+g1 = st.slider("First Period Grade (0–20)", 0, 20, 10)
+g2 = st.slider("Second Period Grade (0–20)", 0, 20, 10)
+
+# Collect input features
+features = np.array([[study_time, failures, absences, g1, g2]])
+
+# Scale input (use same scaler as training)
+features_scaled = scaler.transform(features)
+
+# Predict
+if st.button("🔮 Predict Final Grade"):
+    prediction = model.predict(features_scaled)
+    st.success(f"Predicted Final Grade (G3): **{int(prediction[0])}** / 20")
