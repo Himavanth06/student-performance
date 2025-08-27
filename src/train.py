@@ -37,7 +37,10 @@ print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
 # 6. Save model + scaler
 MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+feature_names = ['hours_studied', 'attendance', 'previous_score', 'assignments_submitted']
+
 with open(MODEL_PATH, "wb") as f:
-    pickle.dump((model, scaler), f)
+    pickle.dump((model, scaler, feature_names), f)
+
 
 print(f"✅ Model saved at {MODEL_PATH}")
